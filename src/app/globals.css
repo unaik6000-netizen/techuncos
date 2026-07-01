@@ -1,0 +1,184 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─────────────────────────────────────────────────────────────
+   Techuncos design tokens — dark-first, logo-derived (cyan→blue)
+   ───────────────────────────────────────────────────────────── */
+:root {
+  /* Surfaces */
+  --background: #05070d;
+  --subtle: #0a0e1a;
+  --card: #0f1623;
+  --card-foreground: #f5f8fc;
+  --popover: #151e2e;
+  --muted: #151e2e;
+
+  /* Text */
+  --foreground: #f5f8fc;
+  --muted-foreground: #a6b2c4;
+  --faint: #6b7a90;
+
+  /* Lines */
+  --border: #243044;
+  --border-strong: #33425c;
+  --input: #243044;
+  --ring: #38bdf8;
+
+  /* Brand / primary */
+  --primary: #38bdf8;
+  --primary-foreground: #05252f;
+  --brand-cyan: #22d3ee;
+  --brand-sky: #38bdf8;
+  --brand-blue: #3b82f6;
+
+  /* Category accents (all held in the blue family) */
+  --cat-ai: #22d3ee;
+  --cat-tech: #3b82f6;
+  --cat-digital: #818cf8;
+  --cat-tutorials: #2dd4bf;
+  --cat-news: #38bdf8;
+
+  /* Semantic */
+  --success: #34d399;
+  --warning: #fbbf24;
+  --error: #f87171;
+  --info: #38bdf8;
+
+  color-scheme: dark;
+}
+
+/* Light theme — scoped (applied on the admin shell wrapper via .light).
+   The public site stays dark-first; only the admin offers a light mode. */
+.light {
+  --background: #f6f8fb;
+  --subtle: #ffffff;
+  --card: #ffffff;
+  --card-foreground: #0b1220;
+  --popover: #ffffff;
+  --muted: #eef2f7;
+
+  --foreground: #0b1220;
+  --muted-foreground: #48566a;
+  --faint: #7d8ba0;
+
+  --border: #e3e8ef;
+  --border-strong: #cfd7e2;
+  --input: #e3e8ef;
+  --ring: #0284c7;
+
+  --primary: #0ea5e9;
+  --primary-foreground: #ffffff;
+  --brand-cyan: #0891b2;
+  --brand-sky: #0284c7;
+  --brand-blue: #2563eb;
+
+  --success: #16a34a;
+  --warning: #d97706;
+  --error: #dc2626;
+  --info: #0284c7;
+
+  color-scheme: light;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    min-height: 100dvh;
+  }
+
+  /* Malayalam script gets a dedicated face + generous leading */
+  :lang(ml) {
+    font-family: var(--font-malayalam), var(--font-sans), sans-serif;
+    line-height: 1.85;
+    letter-spacing: 0;
+  }
+
+  ::selection {
+    background: rgba(56, 189, 248, 0.28);
+    color: #f5f8fc;
+  }
+
+  /* Visible, on-brand focus ring for keyboard users */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--background);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 9999px;
+    border: 2px solid var(--background);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--border-strong);
+  }
+}
+
+@layer components {
+  /* Reusable centered content shell */
+  .container-shell {
+    @apply mx-auto w-full max-w-container px-5 sm:px-8 lg:px-12;
+  }
+
+  /* Gradient text (the "Techuncos sweep") */
+  .text-gradient {
+    @apply bg-brand-gradient bg-clip-text text-transparent;
+  }
+
+  /* Hairline gradient divider */
+  .rule-gradient {
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--border-strong),
+      transparent
+    );
+  }
+
+  /* Skeleton shimmer for loading states */
+  .skeleton {
+    @apply relative overflow-hidden bg-muted;
+  }
+  .skeleton::after {
+    content: "";
+    @apply absolute inset-0 -translate-x-full animate-shimmer;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.06),
+      transparent
+    );
+  }
+}
+
+/* Respect reduced-motion globally */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

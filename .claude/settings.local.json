@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(uipro init --ai claude --global 2>&1)"
+    ]
+  }
+}
