@@ -7,7 +7,7 @@ export const SITE = {
   taglineMl: "AI, ടെക്നോളജി, ഡിജിറ്റൽ — നിങ്ങളുടെ ഭാഷയിൽ.",
   description:
     "Techuncos is a premium Malayalam-first publication covering AI, technology, digital tools, tutorials and prompt engineering.",
-  url: "https://techuncos.com",
+  url: "https://techuncos.in",
   email: "techuncos@gmail.com",
   whatsapp: "8086585801",
   whatsappUrl: "https://wa.me/918086585801",
