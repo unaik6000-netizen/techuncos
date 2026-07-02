@@ -1,9 +1,11 @@
-import { ARTICLES } from "./articles";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { countPendingComments } from "@/lib/admin/comments";
 import { CATEGORIES } from "@/constants/categories";
 
 /**
- * TEMPORARY analytics/counts for the admin dashboard. Replaced by Supabase
- * aggregate queries in the backend phase — same shape, no UI changes.
+ * Admin-only aggregate stats — uses the service-role client so drafts are
+ * counted too (RLS would otherwise hide them). Views trend is still a
+ * placeholder until real analytics events are wired in.
  */
 export interface AdminStats {
   totalArticles: number;
@@ -17,12 +19,33 @@ export interface AdminStats {
   viewsDeltaPct: number;
 }
 
-export function getAdminStats(): AdminStats {
-  const totalArticles = ARTICLES.length;
-  // Mock split until article `status` is stored in the DB.
-  const drafts = 3;
-  const published = totalArticles;
+export async function getAdminStats(): Promise<AdminStats> {
+  const supabase = createAdminClient();
 
+  const [
+    { count: totalArticles },
+    { count: published },
+    { count: drafts },
+    commentsPending,
+    { count: subscribers },
+  ] = await Promise.all([
+    supabase.from("articles").select("id", { count: "exact", head: true }),
+    supabase
+      .from("articles")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "published"),
+    supabase
+      .from("articles")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "draft"),
+    countPendingComments(),
+    supabase
+      .from("newsletter_subscribers")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "active"),
+  ]);
+
+  // Placeholder trend until real view-tracking events exist.
   const viewsSeries = [
     820, 910, 780, 1120, 1340, 1210, 1580, 1490, 1720, 1650, 1890, 2040, 1980,
     2260,
@@ -33,12 +56,12 @@ export function getAdminStats(): AdminStats {
   const viewsDeltaPct = Math.round(((thisWeek - prevWeek) / prevWeek) * 100);
 
   return {
-    totalArticles,
-    published,
-    drafts,
+    totalArticles: totalArticles ?? 0,
+    published: published ?? 0,
+    drafts: drafts ?? 0,
     categories: CATEGORIES.length,
-    commentsPending: 5,
-    subscribers: 1284,
+    commentsPending,
+    subscribers: subscribers ?? 0,
     viewsSeries,
     viewsTotal,
     viewsDeltaPct,

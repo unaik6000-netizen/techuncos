@@ -10,16 +10,16 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { getHeroArticle } from "@/data/articles";
 import { organizationSchema, websiteSchema } from "@/lib/seo";
 
-/** Homepage refreshes at most hourly (ISR) once wired to a live data source. */
+/** Homepage refreshes at most hourly (ISR) — content is live from Supabase. */
 export const revalidate = 3600;
 
-export default function HomePage() {
-  const heroArticle = getHeroArticle();
+export default async function HomePage() {
+  const heroArticle = await getHeroArticle();
 
   return (
     <>
       <JsonLd data={[organizationSchema(), websiteSchema()]} />
-      <Hero featured={heroArticle} />
+      {heroArticle && <Hero featured={heroArticle} />}
       <TrendingSection />
       <FeaturedSection />
       <LatestSection />

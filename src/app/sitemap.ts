@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { ARTICLES } from "@/data/articles";
+import { getArticles } from "@/data/articles";
 import { CATEGORIES } from "@/constants/categories";
 import { siteUrl } from "@/lib/seo";
 
@@ -7,7 +7,7 @@ import { siteUrl } from "@/lib/seo";
  * Auto-generated sitemap. Rebuilds from the data source, so new articles and
  * categories appear automatically. Only routes that actually exist are listed.
  */
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
   const staticRoutes: MetadataRoute.Sitemap = [
@@ -33,7 +33,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }));
 
-  const articles: MetadataRoute.Sitemap = ARTICLES.map((a) => ({
+  const allArticles = await getArticles();
+  const articles: MetadataRoute.Sitemap = allArticles.map((a) => ({
     url: `${siteUrl}/article/${a.slug}`,
     lastModified: new Date(a.publishedAt),
     changeFrequency: "weekly",

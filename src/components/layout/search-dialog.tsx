@@ -1,16 +1,26 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Search, X, CornerDownLeft } from "lucide-react";
+import { Search, X, CornerDownLeft, Loader2 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ARTICLES } from "@/data/articles";
+import { createBrowserClient } from "@/lib/supabase/client";
 import { CategoryBadge } from "@/components/ui/badge";
 import { transitions } from "@/lib/motion";
+import type { CategorySlug, Locale } from "@/types";
+
+interface SearchHit {
+  id: string;
+  slug: string;
+  title: string;
+  category: CategorySlug;
+  lang: Locale | null;
+}
 
 /**
- * ⌘K command-style search. Filters local articles by title/excerpt as you
- * type. Backdrop blur signals a dismissible layer; Esc and backdrop close it.
+ * ⌘K command-style search. Queries Supabase directly (anon key — safe in
+ * the browser, RLS guarantees only published articles are searchable),
+ * debounced as you type. Backdrop blur signals a dismissible layer.
  */
 export function SearchDialog({
   open,
@@ -20,11 +30,14 @@ export function SearchDialog({
   onClose: () => void;
 }) {
   const [query, setQuery] = useState("");
+  const [results, setResults] = useState<SearchHit[]>([]);
+  const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) {
       setQuery("");
+      setResults([]);
       requestAnimationFrame(() => inputRef.current?.focus());
     }
   }, [open]);
@@ -35,15 +48,36 @@ export function SearchDialog({
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  const results = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return ARTICLES.slice(0, 5);
-    return ARTICLES.filter(
-      (a) =>
-        a.title.toLowerCase().includes(q) ||
-        a.excerpt.toLowerCase().includes(q),
-    ).slice(0, 6);
-  }, [query]);
+  useEffect(() => {
+    if (!open) return;
+    const supabase = createBrowserClient();
+    const controller = new AbortController();
+    setLoading(true);
+
+    const timer = setTimeout(async () => {
+      const q = query.trim();
+      const builder = supabase
+        .from("articles")
+        .select("id, slug, title, category, lang")
+        .eq("status", "published")
+        .order("published_at", { ascending: false })
+        .limit(q ? 6 : 5);
+
+      const { data } = q
+        ? await builder.or(`title.ilike.%${q}%,excerpt.ilike.%${q}%`)
+        : await builder;
+
+      if (!controller.signal.aborted) {
+        setResults(data ?? []);
+        setLoading(false);
+      }
+    }, 250);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [query, open]);
 
   return (
     <AnimatePresence>
@@ -77,6 +111,9 @@ export function SearchDialog({
                 aria-label="Search articles"
                 className="h-14 flex-1 bg-transparent text-[15px] text-foreground placeholder:text-faint focus:outline-none"
               />
+              {loading && (
+                <Loader2 className="h-4 w-4 shrink-0 animate-spin text-faint" aria-hidden="true" />
+              )}
               <button
                 onClick={onClose}
                 aria-label="Close search"
@@ -87,9 +124,9 @@ export function SearchDialog({
             </div>
 
             <div className="max-h-[52vh] overflow-y-auto p-2">
-              {results.length === 0 ? (
+              {results.length === 0 && !loading ? (
                 <p className="px-3 py-8 text-center text-sm text-faint">
-                  No articles match “{query}”.
+                  {query ? `No articles match "${query}".` : "Start typing to search…"}
                 </p>
               ) : (
                 <ul className="space-y-0.5">

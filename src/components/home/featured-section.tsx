@@ -3,8 +3,8 @@ import { ArticleCard } from "@/components/article/article-card";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { getFeaturedArticles } from "@/data/articles";
 
-export function FeaturedSection() {
-  const featured = getFeaturedArticles().slice(0, 2);
+export async function FeaturedSection() {
+  const featured = (await getFeaturedArticles()).slice(0, 2);
   if (featured.length === 0) return null;
 
   return (

@@ -37,7 +37,7 @@ export default async function CategoryPage({
   const cat = getCategory(category);
   if (!cat) notFound();
 
-  const articles = getArticlesByCategory(cat.slug);
+  const articles = await getArticlesByCategory(cat.slug);
 
   return (
     <>

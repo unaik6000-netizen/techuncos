@@ -13,7 +13,7 @@ export default async function PanelLayout({
   children: React.ReactNode;
 }) {
   const user = await requireUser();
-  const { commentsPending } = getAdminStats();
+  const { commentsPending } = await getAdminStats();
 
   return (
     <AdminShell

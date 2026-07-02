@@ -3,8 +3,8 @@ import { ArticleCard } from "@/components/article/article-card";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { getLatestArticles } from "@/data/articles";
 
-export function LatestSection() {
-  const latest = getLatestArticles(6);
+export async function LatestSection() {
+  const latest = await getLatestArticles(6);
 
   return (
     <section

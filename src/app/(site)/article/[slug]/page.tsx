@@ -10,6 +10,7 @@ import { ArticleNavigation } from "@/components/article/article-navigation";
 import { RelatedArticles } from "@/components/article/related-articles";
 import { CommentSection } from "@/components/article/comment-section";
 import { JsonLd } from "@/components/seo/json-ld";
+import { getApprovedComments } from "@/data/comments";
 import {
   getArticleBySlug,
   getAllSlugs,
@@ -23,8 +24,9 @@ import type { ArticleBlock, TocItem } from "@/types";
 export const revalidate = 3600;
 export const dynamicParams = true;
 
-export function generateStaticParams() {
-  return getAllSlugs().map((slug) => ({ slug }));
+export async function generateStaticParams() {
+  const slugs = await getAllSlugs();
+  return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({
@@ -33,7 +35,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const article = getArticleBySlug(slug);
+  const article = await getArticleBySlug(slug);
   if (!article) return { title: "Article not found" };
 
   return buildMetadata({
@@ -60,12 +62,15 @@ export default async function ArticlePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const article = getArticleBySlug(slug);
+  const article = await getArticleBySlug(slug);
   if (!article) notFound();
 
   const category = getCategory(article.category);
-  const related = getRelatedArticles(slug, 3);
-  const { prev, next } = getAdjacentArticles(slug);
+  const [related, { prev, next }, comments] = await Promise.all([
+    getRelatedArticles(slug, 3),
+    getAdjacentArticles(slug),
+    getApprovedComments(slug),
+  ]);
   const path = `/article/${slug}`;
 
   const toc: TocItem[] = article.body
@@ -120,7 +125,7 @@ export default async function ArticlePage({
             )}
 
             <AuthorCard author={article.author} />
-            <CommentSection />
+            <CommentSection slug={slug} comments={comments} />
           </article>
 
           <aside className="hidden lg:block">

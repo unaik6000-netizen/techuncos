@@ -6,8 +6,8 @@ import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { formatCompact } from "@/lib/utils";
 import { getTrendingArticles } from "@/data/articles";
 
-export function TrendingSection() {
-  const trending = getTrendingArticles().slice(0, 4);
+export async function TrendingSection() {
+  const trending = (await getTrendingArticles()).slice(0, 4);
 
   return (
     <section aria-labelledby="trending-heading" className="container-shell py-16">

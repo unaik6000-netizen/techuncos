@@ -29,15 +29,20 @@ See [README.md](../README.md#folder-structure).
 3. The **dashboard** shows totals, a 14-day views chart, recent activity and quick actions.
 4. The sidebar groups Content, Community and Configure sections. Use the **theme toggle** (top-right) for dark/light, and the **avatar menu** to sign out. Sessions expire after 8 hours.
 
-> Note: the article editor, media library and moderation queues are scaffolded in the navigation and will be wired to the database in the backend phase (see roadmap). Today the site is content-managed in code.
+4. **Articles** (in the sidebar) is fully working — list, create, edit, delete, and publish/unpublish, all backed by the Supabase database. Media library and moderation queues are still scaffolded and come next (see roadmap).
 
-## 5. Content publishing guide (current, pre-database)
+## 5. Content publishing guide
 
-Until the Supabase CMS is connected, articles are managed in `src/data/articles.ts`:
+Articles are managed entirely through the admin panel (backed by Supabase) — no code editing required.
 
-1. Add an entry to the `ARTICLES` array (id, slug, title, excerpt, category, author, date, readTime, views, featured/trending flags).
-2. For a full article, add a matching entry to `BODIES` with typed content blocks (paragraph, heading, code, callout, quote, list, image, gallery, youtube, linkCard).
-3. Commit and deploy — the homepage, category pages, sitemap and RSS update automatically.
+**To publish a new article:**
+1. Admin → **Articles** → **New article**.
+2. Fill in the title (the URL slug auto-generates), a short excerpt, category, author, and optional tags/cover image.
+3. Write the body in simple markdown: a blank line starts a new paragraph; `## ` / `### ` make headings; `> ` a quote; `- ` or `1. ` a list. Inline `**bold**`, `*italic*`, `` `code` ``, and `[links](https://…)` all work.
+4. Set **Status** to *Draft* (private) or *Published* (live), then **Create article**.
+5. On the list, use the status pill to publish/unpublish instantly, the pencil to edit, the eye to preview, and the trash to delete (with a confirmation). The public homepage, category pages, sitemap and RSS update automatically.
+
+**Advanced content** (code blocks, image galleries, YouTube embeds) currently needs a developer to add the block directly — a richer editor is on the roadmap.
 
 **Content rules:** keep it original; never link to piracy or gambling/"signals" content — it will get the AdSense account banned. Category colours stay in the blue family.
 

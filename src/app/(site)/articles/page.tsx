@@ -27,7 +27,7 @@ export default async function ArticlesPage({
 }) {
   const { filter = "latest" } = await searchParams;
   const active = FILTERS.some((f) => f.key === filter) ? filter : "latest";
-  const articles = getArticles(active);
+  const articles = await getArticles(active);
 
   const filters = (
     <div className="flex flex-wrap gap-2" role="tablist" aria-label="Sort articles">

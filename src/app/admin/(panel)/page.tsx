@@ -16,8 +16,8 @@ import { FadeIn } from "@/components/motion";
 import { getAdminStats } from "@/data/admin";
 import { formatCompact } from "@/lib/utils";
 
-export default function AdminDashboardPage() {
-  const stats = getAdminStats();
+export default async function AdminDashboardPage() {
+  const stats = await getAdminStats();
   const today = new Date().toLocaleDateString("en-IN", {
     weekday: "long",
     day: "numeric",

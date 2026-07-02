@@ -6,7 +6,7 @@ import { siteUrl, absoluteUrl, escapeXml } from "@/lib/seo";
 export const revalidate = 3600;
 
 export async function GET() {
-  const articles = getLatestArticles(20);
+  const articles = await getLatestArticles(20);
 
   const items = articles
     .map((a) => {

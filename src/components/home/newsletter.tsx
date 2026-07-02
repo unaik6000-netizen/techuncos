@@ -1,33 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import { Mail, Check, Loader2, AlertCircle } from "lucide-react";
 import { Reveal } from "@/components/motion";
+import {
+  subscribeNewsletterAction,
+  type NewsletterState,
+} from "@/app/(site)/actions";
 
-type Status = "idle" | "loading" | "success" | "error";
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-lg bg-brand-gradient px-6 text-sm font-medium text-primary-foreground transition-[filter] hover:brightness-110 disabled:opacity-70 [touch-action:manipulation]"
+    >
+      {pending ? (
+        <>
+          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+          Subscribing…
+        </>
+      ) : (
+        "Subscribe"
+      )}
+    </button>
+  );
+}
 
 export function Newsletter() {
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<Status>("idle");
-  const [error, setError] = useState<string | null>(null);
-
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!EMAIL_RE.test(email)) {
-      setError("Please enter a valid email address.");
-      setStatus("error");
-      return;
-    }
-    setError(null);
-    setStatus("loading");
-    // Backend wiring (Supabase) lands in the API phase. Simulate the request
-    // so the success/loading UX is real and reviewable now.
-    await new Promise((r) => setTimeout(r, 900));
-    setStatus("success");
-    setEmail("");
-  };
+  const [state, formAction] = useActionState<NewsletterState, FormData>(
+    subscribeNewsletterAction,
+    {},
+  );
 
   return (
     <section aria-labelledby="newsletter-heading" className="container-shell py-16">
@@ -48,64 +54,57 @@ export function Newsletter() {
             Unsubscribe anytime.
           </p>
 
-          {status === "success" ? (
+          {state.ok ? (
             <div
               role="status"
               className="mx-auto mt-7 inline-flex items-center gap-2 rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm font-medium text-success"
             >
               <Check className="h-4 w-4" aria-hidden="true" />
-              You&apos;re in! Check your inbox to confirm.
+              You&apos;re in! Thanks for subscribing.
             </div>
           ) : (
             <form
-              onSubmit={onSubmit}
+              action={formAction}
               noValidate
               className="mx-auto mt-7 flex max-w-md flex-col gap-3 sm:flex-row"
             >
+              {/* honeypot */}
+              <input
+                type="text"
+                name="company"
+                tabIndex={-1}
+                autoComplete="off"
+                className="absolute left-[-9999px] h-0 w-0 opacity-0"
+                aria-hidden="true"
+              />
               <div className="flex-1 text-left">
                 <label htmlFor="newsletter-email" className="sr-only">
                   Email address
                 </label>
                 <input
                   id="newsletter-email"
+                  name="email"
                   type="email"
                   inputMode="email"
                   autoComplete="email"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    if (status === "error") setStatus("idle");
-                  }}
+                  required
                   placeholder="you@example.com"
-                  aria-invalid={status === "error"}
-                  aria-describedby={error ? "newsletter-error" : undefined}
+                  aria-invalid={!!state.error}
+                  aria-describedby={state.error ? "newsletter-error" : undefined}
                   className="h-12 w-full rounded-lg border border-input bg-background px-4 text-sm text-foreground placeholder:text-faint transition-colors focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
                 />
-                {error && (
+                {state.error && (
                   <p
                     id="newsletter-error"
                     role="alert"
                     className="mt-1.5 flex items-center gap-1.5 text-xs text-error"
                   >
                     <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" />
-                    {error}
+                    {state.error}
                   </p>
                 )}
               </div>
-              <button
-                type="submit"
-                disabled={status === "loading"}
-                className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-lg bg-brand-gradient px-6 text-sm font-medium text-primary-foreground transition-[filter] hover:brightness-110 disabled:opacity-70 [touch-action:manipulation]"
-              >
-                {status === "loading" ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                    Subscribing…
-                  </>
-                ) : (
-                  "Subscribe"
-                )}
-              </button>
+              <SubmitButton />
             </form>
           )}
         </div>
